@@ -1,0 +1,21 @@
+name: MeSocial
+options:
+  minimumXcodeGenVersion: 2.39.0
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.nikitaumov.mesocial
+    IPHONEOS_DEPLOYMENT_TARGET: 18.0
+    SWIFT_VERSION: 6.0
+targets:
+  MeSocial:
+    type: application
+    platform: iOS
+    sources:
+      - path: MeSocial
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        DEVELOPMENT_TEAM: ""
