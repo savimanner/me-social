@@ -3,6 +3,8 @@ import type {
   DraftEdit,
   FeedCard,
   FeedPage,
+  NotionOAuthSession,
+  NotionOAuthState,
   SourceItem,
   UpdateNotionItemInput,
   UserFeedback,
@@ -17,6 +19,8 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
   private readonly feedCardsByUserId = new Map<string, FeedCard[]>();
   private readonly feedbackByUserId = new Map<string, UserFeedback[]>();
   private readonly draftsByUserId = new Map<string, DraftEdit[]>();
+  private readonly notionOAuthStates = new Map<string, NotionOAuthState>();
+  private readonly notionOAuthSessions = new Map<string, NotionOAuthSession>();
 
   async getConnection(userId: string): Promise<WorkspaceConnection | null> {
     return this.connectionsByUserId.get(userId) ?? null;
@@ -219,5 +223,39 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
     this.draftsByUserId.set(draft.userId, [...current, draft]);
     return draft;
   }
-}
 
+  async saveNotionOAuthState(state: NotionOAuthState): Promise<NotionOAuthState> {
+    this.notionOAuthStates.set(state.state, state);
+    return state;
+  }
+
+  async consumeNotionOAuthState(state: string): Promise<NotionOAuthState | null> {
+    const stored = this.notionOAuthStates.get(state) ?? null;
+
+    if (stored) {
+      this.notionOAuthStates.delete(state);
+    }
+
+    return stored;
+  }
+
+  async saveNotionOAuthSession(session: NotionOAuthSession): Promise<NotionOAuthSession> {
+    this.notionOAuthSessions.set(session.id, session);
+    return session;
+  }
+
+  async getNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null> {
+    const session = this.notionOAuthSessions.get(sessionId) ?? null;
+    return session?.userId === userId ? session : null;
+  }
+
+  async consumeNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null> {
+    const session = await this.getNotionOAuthSession(userId, sessionId);
+
+    if (session) {
+      this.notionOAuthSessions.delete(sessionId);
+    }
+
+    return session;
+  }
+}

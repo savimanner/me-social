@@ -167,6 +167,13 @@ export const NotionOAuthStartResponseSchema = z.object({
 });
 export type NotionOAuthStartResponse = z.infer<typeof NotionOAuthStartResponseSchema>;
 
+export const NotionOAuthStateSchema = z.object({
+  state: z.string().min(1),
+  userId: z.string().min(1),
+  createdAt: z.string().datetime()
+});
+export type NotionOAuthState = z.infer<typeof NotionOAuthStateSchema>;
+
 export const NotionOAuthSessionSchema = z.object({
   id: z.string().min(1),
   userId: z.string().min(1),

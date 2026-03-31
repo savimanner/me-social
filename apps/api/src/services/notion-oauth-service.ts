@@ -1,11 +1,10 @@
-import type { DatabaseOption, NotionOAuthSession, NotionOAuthStartResponse } from "@me-social/contracts";
-import { createId, nowIso, type NotionClient } from "@me-social/core";
+import type {
+  DatabaseOption,
+  NotionOAuthSession,
+  NotionOAuthStartResponse
+} from "@me-social/contracts";
+import { createId, nowIso, type NotionClient, type WorkspaceRepository } from "@me-social/core";
 import type { Env } from "../env.js";
-
-type PendingOAuthState = {
-  userId: string;
-  createdAt: string;
-};
 
 type TokenExchangeResponse = {
   access_token: string;
@@ -14,17 +13,16 @@ type TokenExchangeResponse = {
 };
 
 export class NotionOAuthService {
-  private readonly pendingStates = new Map<string, PendingOAuthState>();
-  private readonly sessions = new Map<string, NotionOAuthSession>();
-
   constructor(
     private readonly env: Env,
-    private readonly notionClient: NotionClient
+    private readonly notionClient: NotionClient,
+    private readonly repository: WorkspaceRepository
   ) {}
 
-  createAuthorizationStart(userId: string): NotionOAuthStartResponse {
+  async createAuthorizationStart(userId: string): Promise<NotionOAuthStartResponse> {
     const state = createId("notion_state");
-    this.pendingStates.set(state, {
+    await this.repository.saveNotionOAuthState({
+      state,
       userId,
       createdAt: nowIso()
     });
@@ -54,9 +52,9 @@ export class NotionOAuthService {
   }
 
   async handleMockAuthorization(state: string): Promise<string> {
-    const pending = this.consumePendingState(state);
+    const pending = await this.consumePendingState(state);
     const databases = await this.notionClient.listDatabases("mock-token");
-    const session = this.storeSession({
+    const session = await this.storeSession({
       userId: pending.userId,
       workspaceId: "mock_workspace",
       workspaceName: "Mock Notion Workspace",
@@ -76,10 +74,10 @@ export class NotionOAuthService {
       return this.buildAppRedirectURL({ error: "missing_oauth_code" });
     }
 
-    const pending = this.consumePendingState(state);
+    const pending = await this.consumePendingState(state);
     const token = await this.exchangeCodeForToken(code);
     const databases = await this.notionClient.listDatabases(token.access_token);
-    const session = this.storeSession({
+    const session = await this.storeSession({
       userId: pending.userId,
       workspaceId: token.workspace_id,
       workspaceName: token.workspace_name || "Notion Workspace",
@@ -90,34 +88,37 @@ export class NotionOAuthService {
     return this.buildAppRedirectURL({ sessionId: session.id });
   }
 
-  getSession(userId: string, sessionId: string): NotionOAuthSession {
-    const session = this.sessions.get(sessionId);
+  async getSession(userId: string, sessionId: string): Promise<NotionOAuthSession> {
+    const session = await this.repository.getNotionOAuthSession(userId, sessionId);
 
-    if (!session || session.userId != userId) {
+    if (!session || session.userId !== userId) {
       throw new Error("Notion OAuth session not found");
     }
 
     return session;
   }
 
-  consumeSession(userId: string, sessionId: string): NotionOAuthSession {
-    const session = this.getSession(userId, sessionId);
-    this.sessions.delete(sessionId);
+  async consumeSession(userId: string, sessionId: string): Promise<NotionOAuthSession> {
+    const session = await this.repository.consumeNotionOAuthSession(userId, sessionId);
+
+    if (!session) {
+      throw new Error("Notion OAuth session not found");
+    }
+
     return session;
   }
 
-  private consumePendingState(state: string): PendingOAuthState {
-    const pending = this.pendingStates.get(state);
+  private async consumePendingState(state: string) {
+    const pending = await this.repository.consumeNotionOAuthState(state);
 
     if (!pending) {
       throw new Error("Invalid Notion OAuth state");
     }
 
-    this.pendingStates.delete(state);
     return pending;
   }
 
-  private storeSession({
+  private async storeSession({
     userId,
     workspaceId,
     workspaceName,
@@ -129,7 +130,7 @@ export class NotionOAuthService {
     workspaceName: string;
     accessToken: string;
     databases: DatabaseOption[];
-  }): NotionOAuthSession {
+  }): Promise<NotionOAuthSession> {
     const session: NotionOAuthSession = {
       id: createId("notion_oauth"),
       userId,
@@ -140,8 +141,7 @@ export class NotionOAuthService {
       createdAt: nowIso()
     };
 
-    this.sessions.set(session.id, session);
-    return session;
+    return this.repository.saveNotionOAuthSession(session);
   }
 
   private buildAppRedirectURL({

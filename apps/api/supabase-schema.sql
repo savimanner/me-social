@@ -66,3 +66,19 @@ create table if not exists draft_edits (
   created_at timestamptz not null,
   updated_at timestamptz not null
 );
+
+create table if not exists notion_oauth_states (
+  state text primary key,
+  user_id text not null,
+  created_at timestamptz not null
+);
+
+create table if not exists notion_oauth_sessions (
+  id text primary key,
+  user_id text not null,
+  workspace_id text not null,
+  workspace_name text not null,
+  access_token text not null,
+  databases jsonb not null,
+  created_at timestamptz not null
+);

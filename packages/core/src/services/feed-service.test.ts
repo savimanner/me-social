@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { DraftEdit, FeedCard, FeedPage, SourceItem, UpdateNotionItemInput, UserFeedback, WorkspaceConnection } from "@me-social/contracts";
+import type {
+  DraftEdit,
+  FeedCard,
+  FeedPage,
+  NotionOAuthSession,
+  NotionOAuthState,
+  SourceItem,
+  UpdateNotionItemInput,
+  UserFeedback,
+  WorkspaceConnection
+} from "@me-social/contracts";
 import { FeedService } from "./feed-service.js";
 import type { WorkspaceRepository } from "../repositories/workspace-repository.js";
 import type { LlmProvider } from "../integrations/llm/provider.js";
@@ -82,6 +92,26 @@ class TestRepository implements WorkspaceRepository {
 
   async saveDraft(draft: DraftEdit) {
     return draft;
+  }
+
+  async saveNotionOAuthState(state: NotionOAuthState) {
+    return state;
+  }
+
+  async consumeNotionOAuthState(): Promise<NotionOAuthState | null> {
+    return null;
+  }
+
+  async saveNotionOAuthSession(session: NotionOAuthSession) {
+    return session;
+  }
+
+  async getNotionOAuthSession(): Promise<NotionOAuthSession | null> {
+    return null;
+  }
+
+  async consumeNotionOAuthSession(): Promise<NotionOAuthSession | null> {
+    return null;
   }
 }
 

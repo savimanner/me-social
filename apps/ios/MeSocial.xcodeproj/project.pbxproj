@@ -11,6 +11,7 @@
 		1FE0A3F17CA58FE41FDD9B3A /* OfflineFeedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495FEADCD409D910538D81E5 /* OfflineFeedStore.swift */; };
 		4F0B79122B357F0BEB5734EF /* FeedCardCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFF1B323B9560F4FD8CC913 /* FeedCardCell.swift */; };
 		52DEA4980A928DE293A657BC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13000617D5CD0EBB04E657B8 /* OnboardingView.swift */; };
+		54FE10FD96AB980B77444A6F /* NotionAuthSessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2121329527B84D3F304EDFF5 /* NotionAuthSessionCoordinator.swift */; };
 		9D3D0AE4493B8C96F9E573CE /* PreviewFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6211DE286045A811C52C4A66 /* PreviewFixtures.swift */; };
 		A11121AF55E5D3CFF7CDFDC5 /* CardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658AFB2C5902D34D12776068 /* CardDetailView.swift */; };
 		B181F1097FFA967F6DDE3D21 /* MeSocialApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B83AFB3881FE8A32E501FAD /* MeSocialApp.swift */; };
@@ -21,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		13000617D5CD0EBB04E657B8 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		2121329527B84D3F304EDFF5 /* NotionAuthSessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionAuthSessionCoordinator.swift; sourceTree = "<group>"; };
 		495FEADCD409D910538D81E5 /* OfflineFeedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineFeedStore.swift; sourceTree = "<group>"; };
 		4B83AFB3881FE8A32E501FAD /* MeSocialApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeSocialApp.swift; sourceTree = "<group>"; };
 		6211DE286045A811C52C4A66 /* PreviewFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewFixtures.swift; sourceTree = "<group>"; };
@@ -31,6 +33,7 @@
 		CBFF1B323B9560F4FD8CC913 /* FeedCardCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCardCell.swift; sourceTree = "<group>"; };
 		CC3D1F3C4BB344C553B427C9 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
 		E45733826DA3B863ED4A70D0 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		F1995FA3B04C54EED9D41859 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -97,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				8C38263EAC7FCF4EE6401829 /* APIClient.swift */,
+				2121329527B84D3F304EDFF5 /* NotionAuthSessionCoordinator.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -116,6 +120,7 @@
 				50904FD50A57E36F51A98A15 /* Core */,
 				F3D35069F3474CCA9338A797 /* Features */,
 				81F851F3D04A5BE19620C724 /* Preview */,
+				E0A6DCCBE08A736CEE1DE00E /* Resources */,
 			);
 			path = MeSocial;
 			sourceTree = "<group>";
@@ -134,6 +139,14 @@
 				72FB7BD4E35538D049D08258 /* FeedView.swift */,
 			);
 			path = Feed;
+			sourceTree = "<group>";
+		};
+		E0A6DCCBE08A736CEE1DE00E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F1995FA3B04C54EED9D41859 /* Info.plist */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		E718A523A95E15B2B32A06D8 /* Onboarding */ = {
@@ -220,6 +233,7 @@
 				4F0B79122B357F0BEB5734EF /* FeedCardCell.swift in Sources */,
 				EF2BBFBAC9A6D6AC96AEBD13 /* FeedView.swift in Sources */,
 				B181F1097FFA967F6DDE3D21 /* MeSocialApp.swift in Sources */,
+				54FE10FD96AB980B77444A6F /* NotionAuthSessionCoordinator.swift in Sources */,
 				1FE0A3F17CA58FE41FDD9B3A /* OfflineFeedStore.swift in Sources */,
 				52DEA4980A928DE293A657BC /* OnboardingView.swift in Sources */,
 				9D3D0AE4493B8C96F9E573CE /* PreviewFixtures.swift in Sources */,
@@ -235,10 +249,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_FILE = MeSocial/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -254,10 +265,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_FILE = MeSocial/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

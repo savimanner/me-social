@@ -2,7 +2,6 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Bindable var model: AppModel
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ScrollView {
@@ -36,16 +35,14 @@ struct OnboardingView: View {
                                 Text(session.workspaceId)
                                     .font(.caption.monospaced())
                                     .foregroundStyle(.secondary)
-                            }
-                            .padding(14)
-                            .background(Color.white.opacity(0.7), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+                        .padding(14)
+                        .background(Color.white.opacity(0.7), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
 
                         Button(model.onboarding.oauthSession == nil ? "Connect to Notion" : "Reconnect Notion") {
                             Task {
-                                if let url = await model.startNotionOAuth() {
-                                    openURL(url)
-                                }
+                                await model.connectNotion()
                             }
                         }
                         .buttonStyle(.borderedProminent)

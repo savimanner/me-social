@@ -22,10 +22,15 @@ final class AppModel {
     var onboarding = OnboardingState()
 
     private let cache = OfflineFeedStore()
+    private let notionAuthCoordinator: NotionAuthSessionCoordinating
     private(set) var apiClient: APIClient
 
-    init(apiClient: APIClient = APIClient()) {
+    init(
+        apiClient: APIClient = APIClient(),
+        notionAuthCoordinator: NotionAuthSessionCoordinating = NotionAuthSessionCoordinator()
+    ) {
         self.apiClient = apiClient
+        self.notionAuthCoordinator = notionAuthCoordinator
     }
 
     func start() async {
@@ -49,15 +54,19 @@ final class AppModel {
         }
     }
 
-    func startNotionOAuth() async -> URL? {
+    func connectNotion() async {
         isWorking = true
         defer { isWorking = false }
 
         do {
-            return try await apiClient.startNotionOAuth()
+            let authorizationURL = try await apiClient.startNotionOAuth()
+            let callbackURL = try await notionAuthCoordinator.authenticate(
+                using: authorizationURL,
+                callbackScheme: "mesocial"
+            )
+            await handleIncomingURL(callbackURL)
         } catch {
             errorMessage = error.localizedDescription
-            return nil
         }
     }
 
@@ -85,6 +94,7 @@ final class AppModel {
             onboarding.notionWorkspaceID = session.workspaceId
             onboarding.availableDatabases = session.databases
             onboarding.selectedDatabase = session.databases.first
+            errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }

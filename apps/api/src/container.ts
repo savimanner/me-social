@@ -46,7 +46,7 @@ export function createContainer(env: Env) {
     feedbackService: new FeedbackService(repository),
     draftService: new DraftService(repository, llmProvider),
     notionMutationService: new NotionMutationService(repository, notionClient),
-    notionOAuthService: new NotionOAuthService(env, notionClient),
+    notionOAuthService: new NotionOAuthService(env, notionClient, repository),
     notionClient
   };
 }

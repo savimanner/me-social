@@ -52,7 +52,7 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
       query.data.error
     );
 
-    return reply.type("text/html").send(renderOAuthRedirectPage(redirectUrl));
+    return reply.redirect(redirectUrl, 302);
   });
 
   app.get("/notion/oauth/mock-authorize", async (request, reply) => {
@@ -63,7 +63,7 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
     }
 
     const redirectUrl = await container.notionOAuthService.handleMockAuthorization(query.data.state);
-    return reply.type("text/html").send(renderOAuthRedirectPage(redirectUrl));
+    return reply.redirect(redirectUrl, 302);
   });
 
   app.get("/session/bootstrap", async (request) => {
@@ -73,7 +73,7 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
 
   app.get("/notion/oauth/start", async (request, reply) => {
     const auth = await requireAuth(container, request);
-    const response = container.notionOAuthService.createAuthorizationStart(auth.userId);
+    const response = await container.notionOAuthService.createAuthorizationStart(auth.userId);
     const parsed = NotionOAuthStartResponseSchema.safeParse(response);
 
     if (!parsed.success) {
@@ -91,7 +91,7 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
       return reply.code(400).send({ error: params.error.flatten() });
     }
 
-    const session = container.notionOAuthService.getSession(auth.userId, params.data.id);
+    const session = await container.notionOAuthService.getSession(auth.userId, params.data.id);
     return { session };
   });
 
@@ -126,7 +126,7 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
       return reply.code(400).send({ error: body.error.flatten() });
     }
 
-    const session = container.notionOAuthService.consumeSession(auth.userId, body.data.oauthSessionId);
+    const session = await container.notionOAuthService.consumeSession(auth.userId, body.data.oauthSessionId);
     const connection = await container.workspaceService.connect(auth.userId, {
       workspaceName: session.workspaceName,
       notionWorkspaceId: session.workspaceId,
@@ -261,28 +261,4 @@ export async function registerRoutes(app: FastifyInstance, container: AppContain
     const item = await container.notionMutationService.archive(auth.userId, params.data.id);
     return { item };
   });
-}
-
-function renderOAuthRedirectPage(redirectUrl: string): string {
-  return `<!doctype html>
-  <html>
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <title>Connecting Notion</title>
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f4f0e8; color: #171717; padding: 32px; }
-        .card { max-width: 520px; margin: 10vh auto; padding: 28px; background: white; border-radius: 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
-        a { display: inline-block; margin-top: 16px; padding: 12px 18px; border-radius: 999px; background: #171717; color: white; text-decoration: none; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <h1>Notion connected</h1>
-        <p>Returning to Me Social.</p>
-        <a href="${redirectUrl}">Open Me Social</a>
-      </div>
-      <script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
-    </body>
-  </html>`;
 }

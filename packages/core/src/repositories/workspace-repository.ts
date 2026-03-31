@@ -3,6 +3,8 @@ import type {
   DraftEdit,
   FeedCard,
   FeedPage,
+  NotionOAuthSession,
+  NotionOAuthState,
   SourceItem,
   UpdateNotionItemInput,
   UserFeedback,
@@ -29,5 +31,9 @@ export interface WorkspaceRepository {
   listFeedback(userId: string): Promise<UserFeedback[]>;
   recordFeedback(feedback: UserFeedback): Promise<void>;
   saveDraft(draft: DraftEdit): Promise<DraftEdit>;
+  saveNotionOAuthState(state: NotionOAuthState): Promise<NotionOAuthState>;
+  consumeNotionOAuthState(state: string): Promise<NotionOAuthState | null>;
+  saveNotionOAuthSession(session: NotionOAuthSession): Promise<NotionOAuthSession>;
+  getNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null>;
+  consumeNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null>;
 }
-

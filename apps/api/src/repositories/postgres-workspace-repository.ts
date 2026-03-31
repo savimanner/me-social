@@ -4,6 +4,8 @@ import type {
   FeedCard,
   FeedPage,
   NotionFieldMapping,
+  NotionOAuthSession,
+  NotionOAuthState,
   SourceItem,
   UpdateNotionItemInput,
   UserFeedback,
@@ -81,6 +83,22 @@ type DraftRow = {
   updated_at: string;
 };
 
+type OAuthStateRow = {
+  state: string;
+  user_id: string;
+  created_at: string;
+};
+
+type OAuthSessionRow = {
+  id: string;
+  user_id: string;
+  workspace_id: string;
+  workspace_name: string;
+  access_token: string;
+  databases: NotionOAuthSession["databases"];
+  created_at: string;
+};
+
 function mapConnection(row: ConnectionRow): WorkspaceConnection {
   return {
     id: row.id,
@@ -156,6 +174,26 @@ function mapDraft(row: DraftRow): DraftEdit {
     prompt: row.prompt,
     createdAt: row.created_at,
     updatedAt: row.updated_at
+  };
+}
+
+function mapOAuthState(row: OAuthStateRow): NotionOAuthState {
+  return {
+    state: row.state,
+    userId: row.user_id,
+    createdAt: row.created_at
+  };
+}
+
+function mapOAuthSession(row: OAuthSessionRow): NotionOAuthSession {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    workspaceId: row.workspace_id,
+    workspaceName: row.workspace_name,
+    accessToken: row.access_token,
+    databases: row.databases,
+    createdAt: row.created_at
   };
 }
 
@@ -402,6 +440,73 @@ export class PostgresWorkspaceRepository implements WorkspaceRepository {
     );
 
     return mapDraft(result.rows[0]!);
+  }
+
+  async saveNotionOAuthState(state: NotionOAuthState): Promise<NotionOAuthState> {
+    const result = await this.pool.query<OAuthStateRow>(
+      `insert into notion_oauth_states (state, user_id, created_at)
+       values ($1, $2, $3)
+       on conflict (state) do update set
+         user_id = excluded.user_id,
+         created_at = excluded.created_at
+       returning *`,
+      [state.state, state.userId, state.createdAt]
+    );
+
+    return mapOAuthState(result.rows[0]!);
+  }
+
+  async consumeNotionOAuthState(state: string): Promise<NotionOAuthState | null> {
+    const result = await this.pool.query<OAuthStateRow>(
+      `delete from notion_oauth_states where state = $1 returning *`,
+      [state]
+    );
+
+    return result.rows[0] ? mapOAuthState(result.rows[0]) : null;
+  }
+
+  async saveNotionOAuthSession(session: NotionOAuthSession): Promise<NotionOAuthSession> {
+    const result = await this.pool.query<OAuthSessionRow>(
+      `insert into notion_oauth_sessions (id, user_id, workspace_id, workspace_name, access_token, databases, created_at)
+       values ($1, $2, $3, $4, $5, $6, $7)
+       on conflict (id) do update set
+         user_id = excluded.user_id,
+         workspace_id = excluded.workspace_id,
+         workspace_name = excluded.workspace_name,
+         access_token = excluded.access_token,
+         databases = excluded.databases,
+         created_at = excluded.created_at
+       returning *`,
+      [
+        session.id,
+        session.userId,
+        session.workspaceId,
+        session.workspaceName,
+        session.accessToken,
+        JSON.stringify(session.databases),
+        session.createdAt
+      ]
+    );
+
+    return mapOAuthSession(result.rows[0]!);
+  }
+
+  async getNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null> {
+    const result = await this.pool.query<OAuthSessionRow>(
+      `select * from notion_oauth_sessions where id = $1 and user_id = $2 limit 1`,
+      [sessionId, userId]
+    );
+
+    return result.rows[0] ? mapOAuthSession(result.rows[0]) : null;
+  }
+
+  async consumeNotionOAuthSession(userId: string, sessionId: string): Promise<NotionOAuthSession | null> {
+    const result = await this.pool.query<OAuthSessionRow>(
+      `delete from notion_oauth_sessions where id = $1 and user_id = $2 returning *`,
+      [sessionId, userId]
+    );
+
+    return result.rows[0] ? mapOAuthSession(result.rows[0]) : null;
   }
 
   private async createOrReplaceSourceItem(item: SourceItem) {
