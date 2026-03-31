@@ -1,0 +1,21 @@
+{
+  "name": "@me-social/core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@me-social/contracts": "file:../contracts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.6.3",
+    "vitest": "^3.0.8"
+  }
+}
+
