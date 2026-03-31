@@ -49,34 +49,58 @@ final class AppModel {
         }
     }
 
-    func loadDatabases() async {
-        guard !onboarding.notionToken.isEmpty else { return }
+    func startNotionOAuth() async -> URL? {
         isWorking = true
         defer { isWorking = false }
 
         do {
-            onboarding.availableDatabases = try await apiClient.listDatabases(token: onboarding.notionToken)
-            if onboarding.selectedDatabase == nil {
-                onboarding.selectedDatabase = onboarding.availableDatabases.first
-            }
+            return try await apiClient.startNotionOAuth()
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    func handleIncomingURL(_ url: URL) async {
+        guard url.scheme == "mesocial" else { return }
+
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+
+        if let error = components?.queryItems?.first(where: { $0.name == "error" })?.value {
+            errorMessage = error
+            return
+        }
+
+        guard let sessionID = components?.queryItems?.first(where: { $0.name == "session_id" })?.value else {
+            return
+        }
+
+        isWorking = true
+        defer { isWorking = false }
+
+        do {
+            let session = try await apiClient.loadNotionOAuthSession(id: sessionID)
+            onboarding.oauthSession = session
+            onboarding.workspaceName = session.workspaceName
+            onboarding.notionWorkspaceID = session.workspaceId
+            onboarding.availableDatabases = session.databases
+            onboarding.selectedDatabase = session.databases.first
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
     func connectWorkspace() async {
-        guard let database = onboarding.selectedDatabase else { return }
+        guard let oauthSession = onboarding.oauthSession, let database = onboarding.selectedDatabase else { return }
         isWorking = true
         defer { isWorking = false }
 
         do {
-            let connection = try await apiClient.connectWorkspace(
-                ConnectWorkspaceInput(
-                    workspaceName: onboarding.workspaceName,
-                    notionWorkspaceId: onboarding.notionWorkspaceID,
+            let connection = try await apiClient.connectWorkspaceFromOAuth(
+                ConnectWorkspaceFromOAuthInput(
+                    oauthSessionId: oauthSession.id,
                     notionDatabaseId: database.id,
                     notionDatabaseTitle: database.title,
-                    notionAccessToken: onboarding.notionToken,
                     mapping: onboarding.mapping
                 )
             )
@@ -85,7 +109,7 @@ final class AppModel {
                 userId: bootstrap?.userId ?? "user_demo",
                 email: bootstrap?.email ?? "demo@me-social.local",
                 connection: connection,
-                databases: onboarding.availableDatabases
+                databases: oauthSession.databases
             )
 
             try await apiClient.syncWorkspace()
@@ -222,8 +246,8 @@ final class AppModel {
 @Observable
 final class OnboardingState {
     var workspaceName = "Personal Lab"
-    var notionWorkspaceID = "notion_personal_workspace"
-    var notionToken = ""
+    var notionWorkspaceID = ""
+    var oauthSession: NotionOAuthSession?
     var availableDatabases: [DatabaseOption] = []
     var selectedDatabase: DatabaseOption?
     var mapping = NotionFieldMapping()
@@ -260,4 +284,3 @@ struct EditorState {
         )
     }
 }
-

@@ -12,10 +12,8 @@ targets:
     platform: iOS
     sources:
       - path: MeSocial
+    info:
+      path: MeSocial/Resources/Info.plist
     settings:
       base:
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
-        INFOPLIST_KEY_UILaunchScreen_Generation: true
-        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         DEVELOPMENT_TEAM: ""

@@ -13,17 +13,28 @@ struct APIClient {
         try await send(path: "/session/bootstrap", method: "GET")
     }
 
-    func listDatabases(token: String) async throws -> [DatabaseOption] {
-        let response: DatabasesResponse = try await send(
-            path: "/notion/databases/list",
-            method: "POST",
-            body: NotionDatabaseLookupRequest(token: token)
-        )
-        return response.items
+    func startNotionOAuth() async throws -> URL {
+        let response: NotionOAuthStartResponse = try await send(path: "/notion/oauth/start", method: "GET")
+
+        guard let url = URL(string: response.authorizationUrl) else {
+            throw APIError.server("Invalid Notion authorization URL")
+        }
+
+        return url
+    }
+
+    func loadNotionOAuthSession(id: String) async throws -> NotionOAuthSession {
+        let response: NotionOAuthSessionResponse = try await send(path: "/notion/oauth/session/\(id)", method: "GET")
+        return response.session
     }
 
     func connectWorkspace(_ input: ConnectWorkspaceInput) async throws -> WorkspaceConnection {
         let response: ConnectionResponse = try await send(path: "/workspace/connection", method: "POST", body: input)
+        return response.connection
+    }
+
+    func connectWorkspaceFromOAuth(_ input: ConnectWorkspaceFromOAuthInput) async throws -> WorkspaceConnection {
+        let response: ConnectionResponse = try await send(path: "/workspace/connection/oauth", method: "POST", body: input)
         return response.connection
     }
 
