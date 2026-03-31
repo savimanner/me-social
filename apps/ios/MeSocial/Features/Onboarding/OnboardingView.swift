@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Bindable var model: AppModel
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ScrollView {
@@ -21,20 +22,31 @@ struct OnboardingView: View {
                                 .textInputAutocapitalization(.words)
                         }
 
-                        LabeledContent("Notion workspace ID") {
-                            TextField("notion_workspace", text: $model.onboarding.notionWorkspaceID)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
+                        Text("When you continue, Notion will ask which pages or databases you want this app to access.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+
+                        if let session = model.onboarding.oauthSession {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Connected workspace")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.secondary)
+                                Text(session.workspaceName)
+                                    .font(.headline)
+                                Text(session.workspaceId)
+                                    .font(.caption.monospaced())
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(14)
+                            .background(Color.white.opacity(0.7), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
 
-                        LabeledContent("Notion token") {
-                            SecureField("secret_...", text: $model.onboarding.notionToken)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                        }
-
-                        Button("Load databases") {
-                            Task { await model.loadDatabases() }
+                        Button(model.onboarding.oauthSession == nil ? "Connect to Notion" : "Reconnect Notion") {
+                            Task {
+                                if let url = await model.startNotionOAuth() {
+                                    openURL(url)
+                                }
+                            }
                         }
                         .buttonStyle(.borderedProminent)
                     }
@@ -80,7 +92,7 @@ struct OnboardingView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(model.onboarding.selectedDatabase == nil || model.onboarding.notionToken.isEmpty)
+                .disabled(model.onboarding.selectedDatabase == nil || model.onboarding.oauthSession == nil)
             }
             .padding(24)
         }
@@ -93,4 +105,3 @@ struct OnboardingView: View {
         }
     }
 }
-

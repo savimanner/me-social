@@ -10,6 +10,11 @@ struct MeSocialApp: App {
                 .task {
                     await model.start()
                 }
+                .onOpenURL { url in
+                    Task {
+                        await model.handleIncomingURL(url)
+                    }
+                }
         }
     }
 }
@@ -54,4 +59,3 @@ struct RootView: View {
         }
     }
 }
-

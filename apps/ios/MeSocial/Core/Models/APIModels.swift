@@ -70,6 +70,25 @@ struct DatabaseOption: Codable, Identifiable, Hashable {
     let title: String
 }
 
+struct NotionOAuthStartResponse: Codable {
+    let authorizationUrl: String
+    let state: String
+}
+
+struct NotionOAuthSession: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let workspaceId: String
+    let workspaceName: String
+    let accessToken: String
+    let databases: [DatabaseOption]
+    let createdAt: String
+}
+
+struct NotionOAuthSessionResponse: Codable {
+    let session: NotionOAuthSession
+}
+
 struct SessionBootstrap: Codable {
     let userId: String
     let email: String
@@ -160,6 +179,13 @@ struct ConnectWorkspaceInput: Codable {
     let notionDatabaseId: String
     let notionDatabaseTitle: String
     let notionAccessToken: String
+    let mapping: NotionFieldMapping
+}
+
+struct ConnectWorkspaceFromOAuthInput: Codable {
+    let oauthSessionId: String
+    let notionDatabaseId: String
+    let notionDatabaseTitle: String
     let mapping: NotionFieldMapping
 }
 
@@ -254,4 +280,3 @@ struct SyncResponse: Codable {
 struct NotionDatabaseLookupRequest: Codable {
     let token: String
 }
-
